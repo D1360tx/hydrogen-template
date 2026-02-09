@@ -18,13 +18,71 @@ export function Footer({
       <Await resolve={footerPromise}>
         {(footer) => (
           <footer className="footer">
-            {footer?.menu && header.shop.primaryDomain?.url && (
-              <FooterMenu
-                menu={footer.menu}
-                primaryDomainUrl={header.shop.primaryDomain.url}
-                publicStoreDomain={publicStoreDomain}
-              />
-            )}
+            <div className="footer-inner">
+              <div className="footer-top">
+                <div className="footer-brand">
+                  <h3>Chalice</h3>
+                  <p>
+                    Maison de Champagne since 1837. Crafting extraordinary
+                    cuv&eacute;es from the finest grand cru terroirs of
+                    France.
+                  </p>
+                </div>
+
+                <div className="footer-column">
+                  <h4>Maison</h4>
+                  <NavLink prefetch="intent" to="/collections">
+                    Collections
+                  </NavLink>
+                  <NavLink prefetch="intent" to="/pages/about">
+                    Our Heritage
+                  </NavLink>
+                  <NavLink prefetch="intent" to="/blogs/journal">
+                    Journal
+                  </NavLink>
+                </div>
+
+                <div className="footer-column">
+                  <h4>Experience</h4>
+                  <NavLink prefetch="intent" to="/account">
+                    Cercle Priv&eacute;
+                  </NavLink>
+                  <NavLink prefetch="intent" to="/collections">
+                    Private Tastings
+                  </NavLink>
+                  <NavLink prefetch="intent" to="/collections">
+                    Estate Visits
+                  </NavLink>
+                </div>
+
+                <div className="footer-column">
+                  <h4>Contact</h4>
+                  <NavLink prefetch="intent" to="/pages/about">
+                    Maison Chalice
+                  </NavLink>
+                  <NavLink prefetch="intent" to="/pages/about">
+                    &Eacute;pernay, France
+                  </NavLink>
+                  <NavLink prefetch="intent" to="/pages/about">
+                    Enquiries
+                  </NavLink>
+                </div>
+              </div>
+
+              <div className="footer-bottom">
+                <p>
+                  &copy; {new Date().getFullYear()} Chalice Champagne. All
+                  rights reserved.
+                </p>
+                {footer?.menu && header.shop.primaryDomain?.url && (
+                  <FooterMenu
+                    menu={footer.menu}
+                    primaryDomainUrl={header.shop.primaryDomain.url}
+                    publicStoreDomain={publicStoreDomain}
+                  />
+                )}
+              </div>
+            </div>
           </footer>
         )}
       </Await>
@@ -45,7 +103,6 @@ function FooterMenu({
     <nav className="footer-menu" role="navigation">
       {(menu || FALLBACK_FOOTER_MENU).items.map((item) => {
         if (!item.url) return null;
-        // if the url is internal, we strip the domain
         const url =
           item.url.includes('myshopify.com') ||
           item.url.includes(publicStoreDomain) ||
@@ -54,17 +111,16 @@ function FooterMenu({
             : item.url;
         const isExternal = !url.startsWith('/');
         return isExternal ? (
-          <a href={url} key={item.id} rel="noopener noreferrer" target="_blank">
+          <a
+            href={url}
+            key={item.id}
+            rel="noopener noreferrer"
+            target="_blank"
+          >
             {item.title}
           </a>
         ) : (
-          <NavLink
-            end
-            key={item.id}
-            prefetch="intent"
-            style={activeLinkStyle}
-            to={url}
-          >
+          <NavLink end key={item.id} prefetch="intent" to={url}>
             {item.title}
           </NavLink>
         );
@@ -114,16 +170,3 @@ const FALLBACK_FOOTER_MENU = {
     },
   ],
 };
-
-function activeLinkStyle({
-  isActive,
-  isPending,
-}: {
-  isActive: boolean;
-  isPending: boolean;
-}) {
-  return {
-    fontWeight: isActive ? 'bold' : undefined,
-    color: isPending ? 'grey' : 'white',
-  };
-}

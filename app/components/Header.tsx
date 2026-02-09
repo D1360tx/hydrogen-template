@@ -1,4 +1,4 @@
-import {Suspense} from 'react';
+import {Suspense, useEffect, useState} from 'react';
 import {Await, NavLink} from '@remix-run/react';
 import {type CartViewPayload, useAnalytics} from '@shopify/hydrogen';
 import type {HeaderQuery, CartApiQueryFragment} from 'storefrontapi.generated';
@@ -20,10 +20,21 @@ export function Header({
   publicStoreDomain,
 }: HeaderProps) {
   const {shop, menu} = header;
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 50);
+    };
+    window.addEventListener('scroll', handleScroll, {passive: true});
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
   return (
-    <header className="header">
-      <NavLink prefetch="intent" to="/" style={activeLinkStyle} end>
-        <strong>{shop.name}</strong>
+    <header className={`header${scrolled ? ' scrolled' : ''}`}>
+      <NavLink prefetch="intent" to="/" className="header-logo" end>
+        <ChaliceLogo />
+        <span className="header-logo-text">Chalice</span>
       </NavLink>
       <HeaderMenu
         menu={menu}
@@ -33,6 +44,21 @@ export function Header({
       />
       <HeaderCtas isLoggedIn={isLoggedIn} cart={cart} />
     </header>
+  );
+}
+
+function ChaliceLogo() {
+  return (
+    <svg
+      className="header-logo-icon"
+      viewBox="0 0 32 32"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <path d="M16 2 L20 12 L16 22 L12 12 Z" fill="currentColor" opacity="0.9" />
+      <path d="M16 22 L16 28" stroke="currentColor" strokeWidth="1.5" fill="none" />
+      <path d="M12 28 L20 28" stroke="currentColor" strokeWidth="1.5" fill="none" />
+      <circle cx="16" cy="8" r="2" fill="none" stroke="currentColor" strokeWidth="0.5" opacity="0.5" />
+    </svg>
   );
 }
 
@@ -57,7 +83,7 @@ export function HeaderMenu({
           end
           onClick={close}
           prefetch="intent"
-          style={activeLinkStyle}
+          className="header-menu-item"
           to="/"
         >
           Home
@@ -66,7 +92,6 @@ export function HeaderMenu({
       {(menu || FALLBACK_HEADER_MENU).items.map((item) => {
         if (!item.url) return null;
 
-        // if the url is internal, we strip the domain
         const url =
           item.url.includes('myshopify.com') ||
           item.url.includes(publicStoreDomain) ||
@@ -80,7 +105,6 @@ export function HeaderMenu({
             key={item.id}
             onClick={close}
             prefetch="intent"
-            style={activeLinkStyle}
             to={url}
           >
             {item.title}
@@ -98,7 +122,7 @@ function HeaderCtas({
   return (
     <nav className="header-ctas" role="navigation">
       <HeaderMenuMobileToggle />
-      <NavLink prefetch="intent" to="/account" style={activeLinkStyle}>
+      <NavLink prefetch="intent" to="/account">
         <Suspense fallback="Sign in">
           <Await resolve={isLoggedIn} errorElement="Sign in">
             {(isLoggedIn) => (isLoggedIn ? 'Account' : 'Sign in')}
@@ -118,7 +142,7 @@ function HeaderMenuMobileToggle() {
       className="header-menu-mobile-toggle reset"
       onClick={() => open('mobile')}
     >
-      <h3>☰</h3>
+      <h3>&#9776;</h3>
     </button>
   );
 }
@@ -209,16 +233,3 @@ const FALLBACK_HEADER_MENU = {
     },
   ],
 };
-
-function activeLinkStyle({
-  isActive,
-  isPending,
-}: {
-  isActive: boolean;
-  isPending: boolean;
-}) {
-  return {
-    fontWeight: isActive ? 'bold' : undefined,
-    color: isPending ? 'grey' : 'black',
-  };
-}
